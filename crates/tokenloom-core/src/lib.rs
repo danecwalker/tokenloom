@@ -18,4 +18,4 @@ pub use model::{
 };
 
 /// User agent used for all outbound HTTP traffic (PLAN.md §6, §9).
-pub const USER_AGENT: &str = "tokenloom/0.1.0 (+https://github.com/danewalker/tokenloom)";
+pub const USER_AGENT: &str = "tokenloom/0.1.0 (+https://github.com/danecwalker/tokenloom)";

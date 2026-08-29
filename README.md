@@ -7,11 +7,11 @@
 A fast, safe, token-efficient Rust CLI for web search and page fetching —
 built for LLMs, agents, and anyone tired of pasting HTML into prompts.
 
-[![CI](https://github.com/danewalker/tokenloom/actions/workflows/ci.yml/badge.svg)](https://github.com/danewalker/tokenloom/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/danewalker/tokenloom)](https://github.com/danewalker/tokenloom/releases/latest)
+[![CI](https://github.com/danecwalker/tokenloom/actions/workflows/ci.yml/badge.svg)](https://github.com/danecwalker/tokenloom/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/danecwalker/tokenloom)](https://github.com/danecwalker/tokenloom/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-`curl -fsSL https://raw.githubusercontent.com/danewalker/tokenloom/main/install.sh | sh` — and your agents stop hallucinating URLs.
+`curl -fsSL https://raw.githubusercontent.com/danecwalker/tokenloom/main/install.sh | sh` — and your agents stop hallucinating URLs.
 
 </div>
 
@@ -36,19 +36,19 @@ LLMs need the live web, but raw HTML wastes tokens and hides prompt injections.
 ### One-liner (macOS / Linux / Windows)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/danewalker/tokenloom/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/danecwalker/tokenloom/main/install.sh | sh
 ```
 
 Pin a version, choose a directory, or also install the DeepSeek Harness plugin:
 
 ```bash
-TOKENLOOM_VERSION=v0.1.0 curl -fsSL https://raw.githubusercontent.com/danewalker/tokenloom/main/install.sh | sh -s -- --with-dsh-plugin
+TOKENLOOM_VERSION=v0.1.0 curl -fsSL https://raw.githubusercontent.com/danecwalker/tokenloom/main/install.sh | sh -s -- --with-dsh-plugin
 ```
 
 ### From source
 
 ```bash
-git clone https://github.com/danewalker/tokenloom
+git clone https://github.com/danecwalker/tokenloom
 cd tokenloom
 cargo install --path crates/tokenloom
 ```
@@ -124,14 +124,14 @@ newline-delimited JSON-RPC 2.0 — no API keys, no network setup.
 
 ## Use it as DeepSeek Harness's search provider
 
-tokenloom ships a [Cordis](https://github.com/danewalker/tokenloom) plugin
+tokenloom ships a [Cordis](https://github.com/danecwalker/tokenloom) plugin
 (`integrations/dsh-plugin/`) that replaces the Harness `web_search` backend
 with tokenloom's federated search.
 
 **1. Install the binary + plugin in one shot**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/danewalker/tokenloom/main/install.sh | sh -s -- --with-dsh-plugin
+curl -fsSL https://raw.githubusercontent.com/danecwalker/tokenloom/main/install.sh | sh -s -- --with-dsh-plugin
 ```
 
 This drops `tokenloom` onto your `PATH` and installs the plugin to

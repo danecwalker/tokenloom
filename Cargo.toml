@@ -9,7 +9,7 @@ edition = "2021"
 rust-version = "1.85"
 license = "MIT"
 authors = ["Dane Walker"]
-repository = "https://github.com/danewalker/tokenloom"
+repository = "https://github.com/danecwalker/tokenloom"
 description = "Fast, safe, token-efficient Rust CLI for web search and page fetching, built for LLMs and AI agent pipelines"
 
 [workspace.dependencies]

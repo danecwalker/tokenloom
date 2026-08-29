@@ -1,7 +1,7 @@
 #!/bin/sh
-# tokenloom installer — https://github.com/danewalker/tokenloom
+# tokenloom installer — https://github.com/danecwalker/tokenloom
 #
-#   curl -fsSL https://raw.githubusercontent.com/danewalker/tokenloom/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/danecwalker/tokenloom/main/install.sh | sh
 #
 # Options (env or flags):
 #   TOKENLOOM_VERSION=v0.1.0   pin a release (default: latest)
@@ -11,7 +11,7 @@
 #   --prefix DIR               stage under DIR/bin instead of a system path
 set -eu
 
-REPO="danewalker/tokenloom"
+REPO="danecwalker/tokenloom"
 VERSION="${TOKENLOOM_VERSION:-latest}"
 WITH_DSH_PLUGIN=0
 PREFIX=""

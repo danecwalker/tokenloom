@@ -503,7 +503,7 @@ When an SPA is detected, `tokenloom` delegates page rendering to Jina Reader:
 - **Request Headers:**
   ```http
   Accept: text/plain
-  User-Agent: tokenloom/0.1.0 (+https://github.com/danewalker/tokenloom)
+  User-Agent: tokenloom/0.1.0 (+https://github.com/danecwalker/tokenloom)
   X-No-Cache: false
   X-Target-Selector: main, article, #content, .content, body
   ```
@@ -826,7 +826,7 @@ safe_search = 1               # 0 = off, 1 = moderate, 2 = strict
 output_format = "markdown"    # markdown | json | plain
 
 [http]
-user_agent = "tokenloom/0.1.0 (+https://github.com/danewalker/tokenloom)"
+user_agent = "tokenloom/0.1.0 (+https://github.com/danecwalker/tokenloom)"
 max_response_size_mb = 5
 connect_timeout_ms = 2000
 total_timeout_ms = 8000
