@@ -1,0 +1,33 @@
+[package]
+name = "tokenloom-fetch"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description.workspace = true
+
+[features]
+default = []
+# Local headless Chrome rendering via the DevTools protocol (see PLAN.md §16.2).
+render = ["dep:chromiumoxide"]
+
+[dependencies]
+tokenloom-core = { path = "../tokenloom-core" }
+tokenloom-sanitize = { path = "../tokenloom-sanitize" }
+
+tokio = { workspace = true }
+reqwest = { workspace = true }
+hickory-resolver = { workspace = true }
+governor = { workspace = true }
+rusqlite = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+url = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+chromiumoxide = { version = "0.7", optional = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+wiremock = { workspace = true }

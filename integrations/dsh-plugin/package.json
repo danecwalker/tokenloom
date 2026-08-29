@@ -1,0 +1,15 @@
+{
+  "name": "@dane/dsh-web-search-tokenloom",
+  "description": "tokenloom-backed search provider for the DeepSeek Harness web capability seam (ctx.web) — federated SearXNG-engine search with RRF ranking, served by the local `tokenloom` binary over its stable JSON v1 output",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

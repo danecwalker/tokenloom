@@ -1,0 +1,11 @@
+/target
+/.cargo-home
+fuzz/target
+fuzz/corpus
+fuzz/artifacts
+fuzz/coverage
+*.snap.new
+.cache
+*.db
+*.db-journal
+.DS_Store

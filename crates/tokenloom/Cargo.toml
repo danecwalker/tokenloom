@@ -1,0 +1,33 @@
+[package]
+name = "tokenloom"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+description.workspace = true
+
+[[bin]]
+name = "tokenloom"
+path = "src/main.rs"
+
+[dependencies]
+tokenloom-core = { path = "../tokenloom-core" }
+tokenloom-fetch = { path = "../tokenloom-fetch" }
+tokenloom-sanitize = { path = "../tokenloom-sanitize" }
+tokenloom-engines = { path = "../tokenloom-engines" }
+tokenloom-output = { path = "../tokenloom-output" }
+
+tokio = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+toml = { workspace = true }
+url = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+reqwest = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
