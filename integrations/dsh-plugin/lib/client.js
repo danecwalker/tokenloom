@@ -205,8 +205,10 @@ window.__ModuleLoader__.load({
 		//#region card component
 		var styles = {
 			card: { border: "1px solid var(--dsh-border, #3f3f46)", borderRadius: "10px", padding: "16px", marginBottom: "12px" },
-			title: { fontSize: "15px", fontWeight: 600, margin: "0 0 2px" },
-			description: { fontSize: "13px", opacity: 0.65, margin: "0 0 12px" },
+			header: { display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: "8px", padding: "2px 4px 10px", background: "transparent", border: "none", color: "inherit", textAlign: "left", cursor: "pointer" },
+			title: { display: "inline-block", fontSize: "15px", fontWeight: 600, marginRight: "8px" },
+			description: { display: "inline-block", fontSize: "13px", opacity: 0.65, marginRight: "8px" },
+			chevron: { transition: "transform 120ms ease", flexShrink: 0, opacity: 0.7 },
 			readOnly: { fontSize: "12px", opacity: 0.6, margin: "0 0 8px" },
 			label: { display: "block", fontSize: "13px", fontWeight: 500, margin: "10px 0 4px" },
 			hint: { display: "block", fontSize: "12px", opacity: 0.55, margin: "3px 0 0" },
@@ -239,10 +241,14 @@ window.__ModuleLoader__.load({
 				]
 			});
 		}
+		var chevron = "M4.293 7.293a1 1 0 0 1 1.414 0L8 9.586l2.293-2.293a1 1 0 1 1 1.414 1.414l-3 3a1 1 0 0 1-1.414 0l-3-3a1 1 0 0 1 0-1.414z";
 		function TokenloomCard(props) {
 			// The slot framework converts the registered `hooks` entry into a
 			// selector hook: call it to read the card's projected state.
 			var state = props.useTokenloomCard(function(snapshot) { return snapshot; });
+			var openState = react_useState(false);
+			var open = openState[0], setOpen = openState[1];
+			var blocked = !state.dirty || state.invalid || state.saving;
 			var disabled = !state.writable || state.saving;
 			var fields = [
 				{ field: "bin", id: "plugin-config-tokenloom-bin", label: "Binary", hint: "Path or $PATH name of the tokenloom CLI. Leave blank to use the default.", numeric: false },
@@ -250,30 +256,50 @@ window.__ModuleLoader__.load({
 				{ field: "timeoutMs", id: "plugin-config-tokenloom-search-timeout", label: "Search timeout (ms)", hint: "Wall-clock budget for one search invocation.", numeric: true },
 				{ field: "fetchTimeoutMs", id: "plugin-config-tokenloom-fetch-timeout", label: "Fetch timeout (ms)", hint: "Budget for one fetch; the SPA fallback ladder can run long.", numeric: true }
 			];
+			var headerLabel = (open ? "Hide settings" : "Show settings") + ": tokenloom";
 			return jsxRuntime.jsxs("div", { style: styles.card, children: [
-				jsxRuntime.jsx("h3", { style: styles.title, children: "tokenloom" }),
-				jsxRuntime.jsx("p", { style: styles.description, children: "Federated web search and 7-layer-sanitised page fetching through the tokenloom CLI." }),
-				!state.writable ? jsxRuntime.jsx("p", { style: styles.readOnly, children: "This deployment stores settings read-only." }) : null,
-				fields.map(function(f) {
-					return jsxRuntime.jsx(FieldRow, {
-						id: f.id,
-						label: f.label,
-						hint: f.hint,
-						numeric: f.numeric,
-						disabled: disabled,
-						overriddenLabel: "Overridden",
-						invalidLabel: "Enter a number, or leave blank to use the default.",
-						...state[f.field],
-						onEdit: function(text) { props.edit(f.field, text); },
-						onReset: function() { props.resetField(f.field); }
-					}, f.field);
+				jsxRuntime.jsxs("button", {
+					type: "button",
+					style: styles.header,
+					"aria-expanded": open,
+					"aria-label": headerLabel,
+					onClick: function() { setOpen(!open); },
+					children: [
+						jsxRuntime.jsxs("span", { children: [
+							jsxRuntime.jsx("span", { style: styles.title, children: "tokenloom" }),
+							jsxRuntime.jsx("span", { style: styles.description, children: "Federated web search and 7-layer-sanitised page fetching." }),
+							state.dirty ? jsxRuntime.jsx("span", { style: styles.badge, children: "Unsaved" }) : null
+						] }),
+						jsxRuntime.jsx("svg", {
+							style: { ...styles.chevron, transform: open ? "rotate(180deg)" : "none" },
+							width: 14, height: 14, viewBox: "0 0 16 16", fill: "currentColor",
+							"aria-hidden": true,
+							children: jsxRuntime.jsx("path", { d: chevron })
+						})
+					]
 				}),
-				jsxRuntime.jsxs("div", { style: styles.footer, children: [
-					jsxRuntime.jsx("button", { style: styles.button, type: "button", disabled: disabled || !state.dirty || state.invalid, onClick: props.save, children: state.saving ? "Saving…" : "Save" }),
-					jsxRuntime.jsx("button", { style: { ...styles.button, opacity: 0.8 }, type: "button", disabled: disabled || !state.dirty, onClick: props.discard, children: "Discard" }),
-					state.failed ? jsxRuntime.jsx("span", { style: styles.note, children: "The deployment did not accept these values; they were left for you to correct." }) : null,
-					state.dirty && !state.failed ? jsxRuntime.jsx("span", { style: styles.note, children: "Unsaved" }) : null
-				] })
+				open ? jsxRuntime.jsxs("div", { children: [
+					!state.writable ? jsxRuntime.jsx("p", { style: styles.readOnly, children: "This deployment stores settings read-only." }) : null,
+					fields.map(function(f) {
+						return jsxRuntime.jsx(FieldRow, {
+							id: f.id,
+							label: f.label,
+							hint: f.hint,
+							numeric: f.numeric,
+							disabled: disabled,
+							overriddenLabel: "Overridden",
+							invalidLabel: "Enter a number, or leave blank to use the default.",
+							...state[f.field],
+							onEdit: function(text) { props.edit(f.field, text); },
+							onReset: function() { props.resetField(f.field); }
+						}, f.field);
+					}),
+					jsxRuntime.jsxs("div", { style: styles.footer, children: [
+						state.failed ? jsxRuntime.jsx("p", { style: styles.note, children: "The deployment did not accept these values; they were left for you to correct." }) : null,
+						jsxRuntime.jsx("button", { style: { ...styles.button, opacity: 0.8 }, type: "button", disabled: !state.dirty || state.saving, onClick: props.discard, children: "Discard" }),
+						jsxRuntime.jsx("button", { style: { ...styles.button, fontWeight: 600 }, type: "button", disabled: blocked, onClick: props.save, children: state.saving ? "Saving…" : "Save" })
+					] })
+				] }) : null
 			] });
 		}
 		//#endregion

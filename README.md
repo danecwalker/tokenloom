@@ -180,10 +180,11 @@ Append to `~/.dsh/profiles/web/cordis.patch.yml`:
     fetchTimeoutMs: 45000
     fetchMaxOutputChars: 200000
 
-# silence the providers you're replacing
-- id: web-search-deepseek
-  disabled: true
 ```
+
+No provider disabling needed — `searchProvider` / `fetchProvider` selection
+alone routes both tools through tokenloom. (Leaving `web-search-deepseek`
+enabled is harmless; it simply stops being consulted.)
 
 **3. Reload** — with `pnpm run dev:web` running, client plugins hot-reload;
 otherwise refresh the GUI. Every `web_search` call now fans out across
