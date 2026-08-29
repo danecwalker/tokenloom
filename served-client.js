@@ -13,8 +13,9 @@
 window.__ModuleLoader__.load({
 	id: "@dane/dsh-web-search-tokenloom",
 	factory: (require) => {
+		var react = require("react");
+		var useSyncExternalStore = react.useSyncExternalStore;
 		var react_jsx_runtime = require("react/jsx-runtime");
-		var jsxRuntime = react_jsx_runtime;
 		var module = { exports: {} };
 		var exports = module.exports;
 
@@ -240,9 +241,10 @@ window.__ModuleLoader__.load({
 			});
 		}
 		function TokenloomCard(props) {
-			// The slot framework converts the registered `hooks` entry into a
-			// selector hook: call it to read the card's projected state.
-			var state = props.useTokenloomCard(function(snapshot) { return snapshot; });
+			// The slot framework converts `hooks` entries into `useX` selectors;
+			// fall back to the raw store if it passes them through verbatim.
+			var store = props.useTokenloomCard ?? props.hooks.tokenloomCard;
+			var state = useSyncExternalStore(store.subscribe, store.getSnapshot);
 			var disabled = !state.writable || state.saving;
 			var fields = [
 				{ field: "bin", id: "plugin-config-tokenloom-bin", label: "Binary", hint: "Path or $PATH name of the tokenloom CLI. Leave blank to use the default.", numeric: false },
