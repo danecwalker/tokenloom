@@ -9,3 +9,6 @@ fuzz/coverage
 *.db
 *.db-journal
 .DS_Store
+
+# scratch
+.tmp-ci
