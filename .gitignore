@@ -12,3 +12,5 @@ fuzz/coverage
 
 # scratch
 .tmp-ci
+served-client.js
+test-browser.js
