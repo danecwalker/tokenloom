@@ -117,6 +117,42 @@ var TokenloomSearchProvider = class {
 	}
 };
 
+/**
+ * The tokenloom-backed fetch provider: one `tokenloom fetch <url> --json`
+ * child per retrieval. The binary returns already-sanitised Markdown (the
+ * 7-layer pipeline), which maps to the seam's `kind: "text"` body — the tool
+ * passes it through verbatim instead of running its own HTML→Markdown
+ * conversion. Non-2xx statuses resolve descriptively (a 404 page is a
+ * result, not a throw); hard failures (SSRF rejection, timeout) throw.
+ */
+var TokenloomFetchProvider = class {
+	id = TOKENLOOM_PROVIDER_ID;
+
+	constructor(resolveOptions) {
+		this.resolveOptions = resolveOptions;
+	}
+
+	available() {
+		return true;
+	}
+
+	async fetch(request, signal) {
+		if (signal?.aborted === true) throw new WebError("tokenloom fetch aborted", "WEB_ABORTED");
+		const options = this.resolveOptions();
+		const args = ["fetch", request.url, "--json"];
+		const body = await runTokenloom(options.bin, args, options.fetchTimeoutMs, signal);
+		return {
+			url: typeof body.final_url === "string" && body.final_url.length > 0 ? body.final_url : request.url,
+			statusCode: typeof body.status_code === "number" ? body.status_code : 200,
+			body: {
+				kind: "text",
+				content: typeof body.markdown === "string" ? body.markdown : ""
+			},
+			truncated: body.is_truncated === true
+		};
+	}
+};
+
 /** Cordis plugin name used by loader diagnostics. */
 export const name = "web-search-tokenloom";
 
@@ -124,7 +160,7 @@ export const name = "web-search-tokenloom";
 export const inject = ["web"];
 
 /**
- * Register the tokenloom search provider with `ctx.web`.
+ * Register the tokenloom search and fetch providers with `ctx.web`.
  * @param {object} ctx - plugin context.
  * @param {{bin?: string, maxResults?: number, timeoutMs?: number}} config - the
  * patch-layer config for this plugin (static defaults; $TOKENLOOM_BIN is the
@@ -132,9 +168,12 @@ export const inject = ["web"];
  */
 export function apply(ctx, config) {
 	const configured = config ?? {};
-	ctx.web.registerSearchProvider(new TokenloomSearchProvider(() => ({
+	const resolveOptions = () => ({
 		bin: configured.bin ?? process.env[TOKENLOOM_BIN_ENV] ?? TOKENLOOM_DEFAULT_BIN,
 		maxResults: configured.maxResults ?? 10,
-		timeoutMs: configured.timeoutMs ?? 20000
-	})));
+		timeoutMs: configured.timeoutMs ?? 20000,
+		fetchTimeoutMs: configured.fetchTimeoutMs ?? 45000
+	});
+	ctx.web.registerSearchProvider(new TokenloomSearchProvider(resolveOptions));
+	ctx.web.registerFetchProvider(new TokenloomFetchProvider(resolveOptions));
 }

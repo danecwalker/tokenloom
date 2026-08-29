@@ -162,7 +162,8 @@ Append to `~/.dsh/profiles/web/cordis.patch.yml`:
 
 - id: web
   config:
-    searchProvider: tokenloom   # ← the web seam now uses tokenloom
+    searchProvider: tokenloom   # web_search → federated RRF-ranked results
+    fetchProvider: tokenloom    # web_fetch → the 7-layer sanitiser, not raw HTML
 
 # silence the providers you're replacing
 - id: web-search-deepseek
@@ -171,7 +172,9 @@ Append to `~/.dsh/profiles/web/cordis.patch.yml`:
 
 **3. Reload** — with `pnpm run dev:web` running, client plugins hot-reload;
 otherwise refresh the GUI. Every `web_search` call now fans out across
-tokenloom's engine registry and returns RRF-ranked, token-budgeted sources.
+tokenloom's engine registry and returns RRF-ranked, token-budgeted sources — and
+`web_fetch` returns pages through the 7-layer sanitiser (SSRF guard, boilerplate
+removal, prompt-injection hardening) as clean Markdown, instead of raw HTML.
 
 <details>
 <summary>How it works under the hood</summary>

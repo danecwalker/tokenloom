@@ -223,6 +223,9 @@ pub fn estimate_tokens(text: &str) -> usize {
 pub struct FetchedPage {
     pub requested_url: String,
     pub final_url: String,
+    /// HTTP status of the underlying retrieval (cache hits report 200).
+    #[serde(default)]
+    pub status_code: u16,
     pub title: String,
     pub byline: Option<String>,
     pub published_time: Option<String>,

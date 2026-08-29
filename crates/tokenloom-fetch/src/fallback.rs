@@ -243,6 +243,7 @@ impl Fetcher {
         Ok(FetchedPage {
             requested_url: parsed.to_string(),
             final_url: raw.final_url,
+            status_code: raw.status,
             title,
             byline: doc.byline,
             published_time: doc.published_time,
@@ -333,6 +334,7 @@ impl Fetcher {
         FetchedPage {
             requested_url: hit.canonical_url.clone(),
             final_url: hit.canonical_url.clone(),
+            status_code: 200,
             title: hit.title.clone(),
             byline: None,
             published_time: None,
