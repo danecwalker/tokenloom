@@ -159,11 +159,25 @@ Append to `~/.dsh/profiles/web/cordis.patch.yml`:
         bin: tokenloom        # absolute path also works; $TOKENLOOM_BIN overrides
         maxResults: 10
         timeoutMs: 20000
+        fetchTimeoutMs: 45000 # the SPA fallback ladder can run long
 
 - id: web
   config:
     searchProvider: tokenloom   # web_search → federated RRF-ranked results
     fetchProvider: tokenloom    # web_fetch → the 7-layer sanitiser, not raw HTML
+
+# some bundles ship with the fetch tool disabled — force it on and give the
+# model the full field set (positive integers, all keys, so this works under
+# both config-merge and config-replace semantics)
+- id: tool-web
+  config:
+    search: true
+    fetch: true
+    searchMaxResults: 8
+    searchMaxQueries: 4
+    searchTimeoutMs: 30000
+    fetchTimeoutMs: 45000
+    fetchMaxOutputChars: 200000
 
 # silence the providers you're replacing
 - id: web-search-deepseek
@@ -175,6 +189,15 @@ otherwise refresh the GUI. Every `web_search` call now fans out across
 tokenloom's engine registry and returns RRF-ranked, token-budgeted sources — and
 `web_fetch` returns pages through the 7-layer sanitiser (SSRF guard, boilerplate
 removal, prompt-injection hardening) as clean Markdown, instead of raw HTML.
+The system prompt will tell the model to *follow up with web_fetch* once the
+tool is registered — if it doesn't, the `tool-web` block above was the missing
+piece.
+
+**4. Tune it live** — Settings → Plugins → **tokenloom**: binary path, result
+limit, search timeout, and fetch timeout are all editable in the settings card
+and apply between operations (no restart). The card writes to the
+`web-search-tokenloom:` section of `~/.dsh/settings.yaml`; the patch snippet
+above is only the seeded default.
 
 <details>
 <summary>How it works under the hood</summary>
