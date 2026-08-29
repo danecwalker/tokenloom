@@ -120,10 +120,10 @@ zip)
 esac
 
 # ── install the binary ───────────────────────────────────────────────────────
+# Archives carry a versioned stage directory; find the binary wherever it is.
 BIN_NAME="tokenloom"
-[ -f "$TMP/out/$BIN_NAME" ] && BIN_SRC="$TMP/out/$BIN_NAME"
-[ -f "$TMP/out/$BIN_NAME.exe" ] && BIN_SRC="$TMP/out/$BIN_NAME.exe"
-[ -n "${BIN_SRC:-}" ] || bail "archive layout unexpected — no tokenloom binary found"
+BIN_SRC=$(find "$TMP/out" -type f \( -name "$BIN_NAME" -o -name "$BIN_NAME.exe" \) 2>/dev/null | head -n1)
+[ -n "$BIN_SRC" ] || bail "archive layout unexpected — no tokenloom binary found"
 
 if [ -n "$PREFIX" ]; then
 	INSTALL_DIR="$PREFIX/bin"
@@ -149,7 +149,7 @@ esac
 
 # ── optional: DeepSeek Harness search plugin ─────────────────────────────────
 if [ "$WITH_DSH_PLUGIN" = "1" ]; then
-	PLUGIN_SRC="$TMP/out/integrations/dsh-plugin"
+	PLUGIN_SRC=$(find "$TMP/out" -type d -name "dsh-plugin" 2>/dev/null | head -n1)
 	PLUGIN_DST="${DSH_PROFILES:-$HOME/.dsh}/profiles/node_modules/@dane/dsh-web-search-tokenloom"
 	if [ -d "$PLUGIN_SRC" ]; then
 		mkdir -p "$(dirname "$PLUGIN_DST")"
