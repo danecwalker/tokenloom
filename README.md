@@ -167,8 +167,6 @@ Append to `~/.dsh/profiles/web/cordis.patch.yml`:
 # silence the providers you're replacing
 - id: web-search-deepseek
   disabled: true
-- id: web-search-searxng      # only if you previously used the SearXNG plugin
-  disabled: true
 ```
 
 **3. Reload** — with `pnpm run dev:web` running, client plugins hot-reload;
