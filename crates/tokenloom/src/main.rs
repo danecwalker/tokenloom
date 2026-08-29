@@ -56,6 +56,9 @@ enum Commands {
         /// Truncate output to approximately this many tokens
         #[arg(long)]
         max_tokens: Option<usize>,
+        /// Override the per-query engine cap (default 12)
+        #[arg(long)]
+        max_engines: Option<usize>,
     },
     /// Fetch a URL and convert it to clean Markdown
     #[command(alias = "read")]
@@ -182,6 +185,7 @@ fn main() {
                 timeout_ms,
                 json,
                 max_tokens,
+                max_engines,
             } => {
                 commands::search::run(
                     &config,
@@ -196,6 +200,7 @@ fn main() {
                     timeout_ms,
                     json,
                     max_tokens,
+                    max_engines,
                 )
                 .await
             }

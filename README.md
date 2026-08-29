@@ -78,6 +78,7 @@ tokenloom search "!crates tokio" --json          # stable JSON v1 for agents
 
 # Categories & limits
 tokenloom search "vision transformer" --category science --limit 5
+tokenloom search "vision transformer" --max-engines 999   # fan out to EVERY implemented engine
 
 # Fetch any page as sanitised, LLM-ready Markdown
 tokenloom fetch "https://news.ycombinator.com" --max-tokens 500
@@ -212,7 +213,42 @@ honest provider errors listing exactly which engines failed and why.
 
 </details>
 
-## Configuration
+## Benchmark
+
+Measured on an Apple M-series laptop against the release binary, median of 5
+runs, using the repo's own harness — timings for search/fetch come from the
+binary's `elapsed_ms` field (operation only, no process spawn), while startup
+is full process wall clock. Reproduce with:
+
+```bash
+cargo build --release
+python3 tools/bench.py --bin target/release/tokenloom --runs 5
+```
+
+| Scenario | Result |
+|---|---|
+| startup (`--version`, full process) | 4.9 ms (min 4.7 ms) |
+| search — single engine | 911 ms |
+| search — federated, 3 engines in parallel | 926 ms |
+| search — every implemented engine in parallel (21) | 2760 ms |
+| fetch — uncached (network + sanitiser) | 174 ms |
+| fetch — cache hit (SQLite, warm) | <1 ms |
+| release binary size | 12.1 MiB |
+
+The numbers that matter: **federated search costs about the same as one
+engine** (the fan-out is parallel — wall clock tracks your slowest engine, not
+the sum), and a warm cache hit is effectively free. The all-engines run
+dispatches to every implemented engine that matches the category at once and is
+still dominated by the slowest upstream rather than aggregate load; failed or
+bot-blocked engines are reported honestly and never stall the rest.
+
+> Network-dependent numbers; yours will vary with location and upstream
+> latency. Re-run `python3 tools/bench.py` to reproduce.
+
+# Bangs route to specific engines (SearXNG syntax)
+tokenloom search "!arx quantum error correction"
+tokenloom search "!ddg !news ukraine"
+tokenloom search "!crates tokio" --json          # stable JSON v1 for agents
 
 Precedence: CLI flags → `TOKENLOOM_*` env (`JINA_API_KEY` honoured) →
 `./.tokenloom.toml` → `~/.config/tokenloom/config.toml` → built-in defaults.

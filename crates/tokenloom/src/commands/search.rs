@@ -18,6 +18,7 @@ pub async fn run(
     timeout_ms: Option<u64>,
     json: bool,
     max_tokens: Option<usize>,
+    max_engines: Option<usize>,
 ) -> i32 {
     let app = match App::new(config) {
         Ok(a) => a,
@@ -68,6 +69,7 @@ pub async fn run(
     query.safe_search = safe_search.clamp(0, 2);
     query.time_range = time_range;
     query.limit = limit.unwrap_or(config.general.default_limit).max(1);
+    query.max_engines = max_engines;
     query.timeout =
         std::time::Duration::from_millis(timeout_ms.unwrap_or(config.general.timeout_ms));
 

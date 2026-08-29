@@ -118,6 +118,9 @@ pub struct SearchQuery {
     /// day, week, month, year
     pub time_range: Option<String>,
     pub limit: usize,
+    /// Overrides the federation engine cap for this query when set.
+    #[serde(default)]
+    pub max_engines: Option<usize>,
     pub timeout: Duration,
 }
 
@@ -135,6 +138,7 @@ impl SearchQuery {
             safe_search: 1,
             time_range: None,
             limit: 10,
+            max_engines: None,
             timeout: Duration::from_millis(4000),
         }
     }

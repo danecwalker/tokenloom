@@ -57,16 +57,17 @@ impl Federator {
             }
         }
 
+        let cap = query.max_engines.unwrap_or(MAX_ENGINES_PER_QUERY);
         if selected.is_empty() {
             let category = query.category;
             for spec in self.registry.engines_for_category(category, false) {
-                if selected.len() >= MAX_ENGINES_PER_QUERY {
+                if selected.len() >= cap {
                     break;
                 }
                 selected.push(spec.name.clone());
             }
         } else {
-            selected.truncate(MAX_ENGINES_PER_QUERY);
+            selected.truncate(cap);
         }
         (selected, failures)
     }
