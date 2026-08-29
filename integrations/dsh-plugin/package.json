@@ -1,7 +1,7 @@
 {
   "name": "@dane/dsh-web-search-tokenloom",
   "description": "tokenloom-backed search AND fetch providers for the DeepSeek Harness web capability seam (ctx.web) \u2014 federated SearXNG-engine search with RRF ranking plus 7-layer-sanitised page fetching, with a live-editable Plugins settings card",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
   "main": "lib/index.js",
@@ -11,5 +11,14 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
+    }
   }
 }

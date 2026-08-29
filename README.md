@@ -197,7 +197,9 @@ piece.
 limit, search timeout, and fetch timeout are all editable in the settings card
 and apply between operations (no restart). The card writes to the
 `web-search-tokenloom:` section of `~/.dsh/settings.yaml`; the patch snippet
-above is only the seeded default.
+above is only the seeded default. The card ships as the plugin's browser half
+(`lib/client.js`) — after updating the plugin, restart the harness once so the
+host composes the new section and the browser loads the card.
 
 <details>
 <summary>How it works under the hood</summary>
