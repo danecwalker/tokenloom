@@ -10,14 +10,20 @@
 //! 5. main-content extraction (readability via `dom_smoothie`)
 //! 6. Markdown generation (htmd)
 //! 7. LLM hardening (NFC, zero-width/bidi strip, fence escaping, budget)
+//!
+//! Non-HTML payloads (JSON, XML, plain-text families) skip layers 2–6 and
+//! take the lighter per-type passes in [`structured`] instead — Layer 7
+//! hardening always applies.
 
 pub mod cleaner;
 pub mod extractor;
 pub mod hardening;
 pub mod markdown;
 pub mod pre_strip;
+pub mod structured;
 
 pub use hardening::{harden_markdown, HardeningOptions};
+pub use structured::{sanitize_json, sanitize_plaintext, sanitize_xml};
 
 use crate::cleaner::sanitize_html_string;
 use crate::extractor::extract_article_with_meta;
@@ -158,7 +164,7 @@ fn meta_charset(head: &str) -> Option<String> {
     None
 }
 
-fn take_quoted_or_token(s: &str) -> (String, usize) {
+pub(crate) fn take_quoted_or_token(s: &str) -> (String, usize) {
     let mut chars = s.char_indices();
     if let Some((_, first)) = chars.next() {
         let quote = if first == '"' || first == '\'' {

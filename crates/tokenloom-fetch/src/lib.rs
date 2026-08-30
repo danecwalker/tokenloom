@@ -10,7 +10,7 @@ pub mod spa_detector;
 pub mod ssrf;
 pub mod store;
 
-pub use client::{FetchClient, RawFetch};
+pub use client::{FetchClient, RawFetch, ResponseKind};
 pub use fallback::{FetchOptions, Fetcher, DEGRADED_WARNING};
 pub use jina::JinaClient;
 pub use ssrf::{ip_is_blocked, validate_url};

@@ -1,7 +1,7 @@
 //! Fetch pipeline orchestrator: static GET → SPA detection → Jina Reader →
 //! the 5-step rate-limit fallback ladder (PLAN.md §6).
 
-use crate::client::FetchClient;
+use crate::client::{FetchClient, ResponseKind};
 use crate::jina::{JinaClient, JinaOutcome};
 use crate::spa_detector;
 use crate::store::{CachedPage, SqliteStore};
@@ -10,7 +10,7 @@ use std::time::{Duration, Instant};
 use tokenloom_core::{estimate_tokens, FetchedPage, RenderMethod, TokenloomError};
 use tokenloom_sanitize::{
     decode_html, harden_markdown, hardening::HardeningOptions as HO, sanitize_document,
-    SanitizeOptions,
+    sanitize_json, sanitize_plaintext, sanitize_xml, SanitizeOptions, SanitizedDocument,
 };
 use url::Url;
 
@@ -132,26 +132,23 @@ impl Fetcher {
         };
 
         // ── Step 4: sanitise statically (always — needed for detection and
-        //    for the degraded fallback) ─────────────────────────────────────
-        let header_charset: Option<&str> = None;
-        let doc = sanitize_document(
+        //    for the degraded fallback). The content kind selects the
+        //    sanitisation pass; HTML keeps the full 7-layer pipeline. ──────
+        let base_url = Url::parse(&raw.final_url).unwrap_or_else(|_| parsed.clone());
+        let doc = sanitize_by_kind(
+            raw.kind,
             &raw.body,
-            header_charset,
-            &Url::parse(&raw.final_url).unwrap_or(parsed.clone()),
+            raw.content_type.as_deref(),
+            &base_url,
             &sanitize,
         )?;
         let visible_chars = doc.markdown.chars().count();
 
-        // ── Step 5: SPA detection & Jina delegation ────────────────────────
-        let decoded = decode_html(&raw.body, header_charset);
+        // ── Step 5: SPA detection & Jina delegation (HTML only) ────────────
         let spa = self.enable_spa_detection
             && !opts.no_reader
-            && raw
-                .content_type
-                .as_deref()
-                .unwrap_or("text/html")
-                .contains("html")
-            && spa_detector::detect(&decoded, visible_chars).is_spa;
+            && raw.kind == ResponseKind::Html
+            && spa_detector::detect(&decode_html(&raw.body, None), visible_chars).is_spa;
 
         let mut render_method = RenderMethod::StaticDirect;
         let mut degradation_warning = None;
@@ -223,6 +220,12 @@ impl Fetcher {
                     ));
                 }
             }
+        }
+
+        // Non-HTML payloads have no DOM to harvest a title from; fall back
+        // to the last URL path segment (e.g. …/README → "README").
+        if title.is_empty() && raw.kind != ResponseKind::Html {
+            title = url_path_fallback_title(&base_url);
         }
 
         // ── Step 6: persist to cache & assemble the page ───────────────────
@@ -358,6 +361,26 @@ enum LadderResult {
     Degraded,
 }
 
+/// Route a response body through the sanitisation pass for its content kind
+/// (PLAN.md §7): full 7-layer pipeline for HTML, strictly lighter per-type
+/// passes for JSON, XML and the plain-text families.
+fn sanitize_by_kind(
+    kind: ResponseKind,
+    body: &[u8],
+    content_type: Option<&str>,
+    base_url: &Url,
+    sanitize: &SanitizeOptions,
+) -> Result<SanitizedDocument, TokenloomError> {
+    match kind {
+        ResponseKind::Html => sanitize_document(body, None, base_url, sanitize),
+        ResponseKind::Json => sanitize_json(body, None, sanitize),
+        ResponseKind::Xml => sanitize_xml(body, None, sanitize),
+        ResponseKind::Text => {
+            sanitize_plaintext(body, None, kind.fence_language(content_type), sanitize)
+        }
+    }
+}
+
 fn title_or_first_heading(markdown: &str, fallback: &str) -> String {
     for line in markdown.lines() {
         let t = line.trim();
@@ -371,6 +394,16 @@ fn title_or_first_heading(markdown: &str, fallback: &str) -> String {
     fallback.to_string()
 }
 
+/// Title fallback for structured payloads without an intrinsic title: the
+/// last non-empty URL path segment, else the host.
+fn url_path_fallback_title(base: &Url) -> String {
+    base.path_segments()
+        .and_then(|mut segs| segs.rfind(|s| !s.is_empty()))
+        .map(str::to_string)
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| base.host_str().unwrap_or_default().to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -382,5 +415,61 @@ mod tests {
             "Real Title"
         );
         assert_eq!(title_or_first_heading("no headings", "Old"), "Old");
+    }
+
+    #[test]
+    fn url_title_fallback_uses_last_path_segment() {
+        let u: Url = "https://example.com/data/annual-report.csv"
+            .parse()
+            .unwrap();
+        assert_eq!(url_path_fallback_title(&u), "annual-report.csv");
+        let u: Url = "https://example.com/".parse().unwrap();
+        assert_eq!(url_path_fallback_title(&u), "example.com");
+        let u: Url = "https://example.com/api/".parse().unwrap();
+        assert_eq!(url_path_fallback_title(&u), "api");
+    }
+
+    #[test]
+    fn kind_routes_to_the_matching_sanitiser() {
+        let sanitize = SanitizeOptions::default();
+        let base: Url = "https://example.com/x".parse().unwrap();
+
+        // JSON bypasses the HTML pipeline and arrives fenced, verbatim.
+        let doc = sanitize_by_kind(
+            ResponseKind::Json,
+            br#"{"name":"Comfy"}"#,
+            Some("application/json"),
+            &base,
+            &sanitize,
+        )
+        .unwrap();
+        assert!(doc
+            .markdown
+            .starts_with("<!-- BEGIN_UNTRUSTED_CONTENT -->\n```json"));
+        assert!(doc.markdown.contains(r#"{"name":"Comfy"}"#));
+
+        // XML arrives fenced with its title harvested.
+        let doc = sanitize_by_kind(
+            ResponseKind::Xml,
+            br#"<feed><title>My Feed</title></feed>"#,
+            Some("application/atom+xml"),
+            &base,
+            &sanitize,
+        )
+        .unwrap();
+        assert_eq!(doc.title, "My Feed");
+        assert!(doc.markdown.contains("```xml"));
+
+        // HTML still runs the full 7-layer pipeline.
+        let doc = sanitize_by_kind(
+            ResponseKind::Html,
+            b"<html><head><title>T</title></head><body><p>hello</p></body></html>",
+            Some("text/html"),
+            &base,
+            &sanitize,
+        )
+        .unwrap();
+        assert!(doc.markdown.contains("hello"));
+        assert_eq!(doc.title, "T");
     }
 }
