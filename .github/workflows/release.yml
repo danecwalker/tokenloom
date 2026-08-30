@@ -52,6 +52,16 @@ jobs:
       - name: Install cargo-zigbuild (aarch64 static Linux build)
         if: matrix.target == 'aarch64-unknown-linux-musl'
         uses: taiki-e/install-action@cargo-zigbuild
+      - name: Stamp version from tag
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # Replace the first line-start `version = ` (the [workspace.package]
+          # entry) — portable across GNU/BSD awk.
+          awk -v v="$VERSION" '!done && /^version = / { print "version = \"" v "\""; done = 1; next } { print }' Cargo.toml > Cargo.toml.new
+          mv Cargo.toml.new Cargo.toml
+          echo "release version: $VERSION (tag $GITHUB_REF_NAME)"
+          grep -m1 '^version' Cargo.toml
       - name: Build
         shell: bash
         working-directory: ${{ github.workspace }}

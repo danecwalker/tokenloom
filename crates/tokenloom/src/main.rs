@@ -101,6 +101,18 @@ enum Commands {
     /// Inspect configuration
     #[command(subcommand)]
     Config(ConfigCommands),
+    /// Check GitHub Releases for a newer version and self-update
+    Update {
+        /// Only report the available version; don't download or install
+        #[arg(long)]
+        check: bool,
+        /// Update to a specific version (e.g. 0.1.7) instead of the latest
+        #[arg(long)]
+        to: Option<String>,
+        /// Reinstall even when already up to date
+        #[arg(long)]
+        force: bool,
+    },
     /// Launch the MCP stdio tool server (search & fetch tools)
     Mcp,
 }
@@ -231,6 +243,9 @@ fn main() {
             Commands::Bangs { pattern, json } => commands::bangs::run(&config, pattern, json),
             Commands::Doctor => commands::doctor::run(&config).await,
             Commands::Config(cmd) => commands::config_cmd::run(&config, cmd),
+            Commands::Update { check, to, force } => {
+                commands::update::run(&config, check, to, force).await
+            }
             Commands::Mcp => commands::mcp::run(&config).await,
         }
     });

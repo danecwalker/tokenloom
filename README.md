@@ -84,11 +84,24 @@ tokenloom search "vision transformer" --max-engines 999   # fan out to EVERY imp
 tokenloom fetch "https://news.ycombinator.com" --max-tokens 500
 tokenloom read "https://example.com"             # `read` is an alias
 
+# Non-HTML responses get lighter, per-type sanitisation (no HTML parsing):
+# JSON & NDJSON pass through verbatim, fenced as a code block
+tokenloom fetch "https://huggingface.co/api/models/openai/clip-vit-base-patch32"
+# XML (RSS/Atom/SVG) is fenced with its <title> harvested; YAML/CSV and
+# source-code types (JS/TS/CSS/shell/Python/diff) are fenced with their
+# language tag; text/plain & text/markdown stay prose. Binary types are
+# rejected.
+
 # Inspect the registry & diagnose
 tokenloom engines list --category science
 tokenloom engines test duckduckgo
 tokenloom bangs ddg
 tokenloom doctor
+
+# Self-update from GitHub Releases (sha256-verified)
+tokenloom update --check          # report only
+tokenloom update                  # install the latest release
+tokenloom update --to 0.1.7      # pin / downgrade
 ```
 
 Example output:

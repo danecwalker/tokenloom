@@ -7,6 +7,7 @@ pub mod engines;
 pub mod fetch;
 pub mod mcp;
 pub mod search;
+pub mod update;
 
 use std::sync::Arc;
 use tokenloom_core::Config;

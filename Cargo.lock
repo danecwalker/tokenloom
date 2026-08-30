@@ -2995,6 +2995,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sha2"
+version = "0.10.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283"
+dependencies = [
+ "cfg-if",
+ "cpufeatures 0.2.17",
+ "digest",
+]
+
+[[package]]
 name = "sharded-slab"
 version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3304,13 +3315,14 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokenloom"
-version = "0.1.0"
+version = "0.1.5"
 dependencies = [
  "anyhow",
  "clap",
  "reqwest",
  "serde",
  "serde_json",
+ "sha2",
  "tempfile",
  "tokenloom-core",
  "tokenloom-engines",
@@ -3326,7 +3338,7 @@ dependencies = [
 
 [[package]]
 name = "tokenloom-core"
-version = "0.1.0"
+version = "0.1.5"
 dependencies = [
  "reqwest",
  "serde",
@@ -3341,7 +3353,7 @@ dependencies = [
 
 [[package]]
 name = "tokenloom-engines"
-version = "0.1.0"
+version = "0.1.5"
 dependencies = [
  "async-trait",
  "reqwest",
@@ -3360,7 +3372,7 @@ dependencies = [
 
 [[package]]
 name = "tokenloom-fetch"
-version = "0.1.0"
+version = "0.1.5"
 dependencies = [
  "chromiumoxide",
  "governor",
@@ -3381,7 +3393,7 @@ dependencies = [
 
 [[package]]
 name = "tokenloom-output"
-version = "0.1.0"
+version = "0.1.5"
 dependencies = [
  "serde",
  "serde_json",
@@ -3390,7 +3402,7 @@ dependencies = [
 
 [[package]]
 name = "tokenloom-sanitize"
-version = "0.1.0"
+version = "0.1.5"
 dependencies = [
  "ammonia",
  "chardetng",
@@ -4186,7 +4198,7 @@ dependencies = [
 
 [[package]]
 name = "xtask"
-version = "0.1.0"
+version = "0.1.5"
 dependencies = [
  "anyhow",
  "serde",
